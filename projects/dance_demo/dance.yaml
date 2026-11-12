@@ -1,0 +1,18 @@
+# Nhân vật nhảy theo video mẫu (Wan 2.2 Animate 14B).
+# Chạy:  .venv/bin/python -m pipeline dance projects/dance_demo/dance.yaml
+name: dance_demo
+aspect: "9:16"                      # TikTok
+
+# Ảnh nhân vật: TOÀN THÂN, đứng thẳng, thấy rõ mặt + trang phục, khung dọc giống video mẫu.
+character_image: assets/character.png
+# Video nhảy mẫu: 1 người, toàn thân trong khung, camera đứng yên, nền đơn giản là tốt nhất.
+drive_video: assets/dance.mp4
+
+start: 0          # bắt đầu lấy từ giây thứ mấy của video mẫu
+duration: 15      # độ dài (giây), 10-25s
+use_drive_audio: true               # dùng luôn nhạc của video mẫu
+# music: assets/music.mp3           # hoặc thay nhạc khác
+prompt: >-
+  a young woman dancing energetically in her room, smooth natural motion,
+  consistent face, hair and outfit, realistic
+# seed: 42

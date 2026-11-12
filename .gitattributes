@@ -1,0 +1,10 @@
+# Server chạy Ubuntu: giữ LF cho script, kể cả khi commit từ Windows
+* text=auto eol=lf
+*.sh text eol=lf
+*.py text eol=lf
+*.yaml text eol=lf
+*.png binary
+*.jpg binary
+*.wav binary
+*.mp3 binary
+*.mp4 binary

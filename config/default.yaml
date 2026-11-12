@@ -1,0 +1,117 @@
+# Cấu hình mặc định. Muốn đổi trên server: tạo config/local.yaml chỉ chứa
+# các khóa cần ghi đè (file đó không được commit). Biến môi trường trong .env
+# ghi đè url/key (COMFY_URL, TTS_BASE_URL, TTS_API_KEY, LLM_*).
+
+comfy:
+  url: http://127.0.0.1:8188
+  timeout_sec: 3600        # tối đa cho một job (video 14B có thể lâu)
+  poll_sec: 2
+
+# ---------- Ảnh keyframe (SDXL) ----------
+keyframe:
+  checkpoint: RealVisXL_V5.0_fp16.safetensors
+  steps: 30
+  cfg: 5.0
+  sampler: dpmpp_2m_sde
+  scheduler: karras
+  candidates: 3            # số ảnh ứng viên mỗi shot, chọn bằng keyframe_pick
+  style: >-
+    cinematic film still, shot on 35mm, natural lighting, photorealistic,
+    detailed skin texture, sharp focus, high dynamic range
+  negative: >-
+    cartoon, anime, illustration, 3d render, painting, deformed, bad anatomy,
+    extra fingers, mutated hands, blurry, lowres, watermark, text, logo,
+    oversaturated, plastic skin
+  sizes:
+    "16:9": [1344, 768]
+    "9:16": [768, 1344]
+    "1:1":  [1024, 1024]
+
+# ---------- Ảnh -> video (Wan 2.2 I2V 14B, GGUF) ----------
+video:
+  unet_high: Wan2.2-I2V-A14B-HighNoise-Q4_K_M.gguf
+  unet_low:  Wan2.2-I2V-A14B-LowNoise-Q4_K_M.gguf
+  text_encoder: umt5_xxl_fp8_e4m3fn_scaled.safetensors
+  vae: wan_2.1_vae.safetensors
+
+  # LightX2V 4-step LoRA: nhanh hơn ~5 lần. Tắt (false) để chất lượng/động tác tốt hơn nhưng rất chậm.
+  lightning: true
+  lora_high: wan2.2_i2v_lightx2v_4steps_lora_v1_high_noise.safetensors
+  lora_low:  wan2.2_i2v_lightx2v_4steps_lora_v1_low_noise.safetensors
+  lightning_preset: {steps: 4,  cfg: 1.0, shift: 5.0, split: 2}
+  full_preset:      {steps: 20, cfg: 3.5, shift: 8.0, split: 10}
+  sampler: euler
+  scheduler: simple
+
+  fps: 16                  # fps gốc của Wan 2.2 14B
+  length: 81               # số frame (phải = 4n+1). 81 frame / 16fps ≈ 5 giây
+  sizes:                   # độ phân giải render (bội số của 16)
+    "16:9": [832, 480]     # đổi [1280, 720] nếu chấp nhận chậm gấp ~3
+    "9:16": [480, 832]
+    "1:1":  [640, 640]
+  prompt_suffix: "realistic natural motion, cinematic, consistent face and clothing"
+  negative: >-
+    色调艳丽，过曝，静态，细节模糊不清，字幕，风格，作品，画作，画面，静止，整体发灰，最差质量，
+    低质量，JPEG压缩残留，丑陋的，残缺的，多余的手指，画得不好的手部，画得不好的脸部，畸形的，
+    毁容的，形态畸形的肢体，手指融合，静止不动的画面，杂乱的背景，三条腿，背景人很多，倒着走
+
+  interpolation: ffmpeg    # none | ffmpeg (minterpolate, tăng fps lên output_fps)
+
+# ---------- TTS (VieNeu) ----------
+tts:
+  base_url: https://api-tts.saokhue.io
+  api_key: ""              # đặt trong .env: TTS_API_KEY
+  model: vieneu-v3-turbo
+  default_voice: null      # null = giọng mặc định của server
+  sample_rate: 48000
+  temperature: 0.8
+  top_k: 25
+  top_p: 0.95
+  repetition_penalty: 1.2
+  timeout_sec: 300
+  retries: 3
+
+# ---------- Hậu kỳ ----------
+assemble:
+  output_fps: 24
+  sizes:                   # độ phân giải file cuối (upscale lanczos)
+    "16:9": [1280, 720]
+    "9:16": [720, 1280]
+    "1:1":  [960, 960]
+  crossfade: 0.0           # giây chuyển cảnh mờ giữa các shot, 0 = cắt thẳng
+  tail_after_dialogue: 0.4 # giữ hình thêm sau câu thoại cuối (giây)
+  bgm_volume: 0.22
+  ducking: true            # nhạc nền tự nhỏ lại khi có thoại
+  subtitles: burn          # burn | srt | none
+  subtitle_style: "FontName=DejaVu Sans,FontSize=16,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,BorderStyle=1,Outline=2,Shadow=0,MarginV=28"
+  crf: 18
+
+# ---------- LLM (lệnh plan) ----------
+llm:
+  base_url: http://127.0.0.1:11434/v1
+  api_key: ollama
+  model: qwen3:14b
+  temperature: 0.7
+  timeout_sec: 600
+
+# ---------- Nhân vật nhảy theo video mẫu (Wan 2.2 Animate 14B) ----------
+dance:
+  unet: Wan2.2-Animate-14B-Q4_K_M.gguf
+  lora: lightx2v_I2V_14B_480p_cfg_step_distill_rank64_bf16.safetensors
+  steps: 6
+  cfg: 1.0
+  shift: 8.0
+  sampler: euler
+  scheduler: simple
+  fps: 16
+  chunk_length: 77         # frame mỗi lần sinh (4n+1). Giảm còn 49 nếu hết VRAM
+  overlap: 5               # frame nối giữa các đoạn (continue_motion)
+  sizes:
+    "9:16": [480, 832]     # TikTok
+    "16:9": [832, 480]
+    "1:1":  [640, 640]
+  pose_resolution: 512
+  detect_hand: false       # true = bám cả động tác tay (DWPose hand)
+  bbox_detector: yolox_l.torchscript.pt
+  pose_estimator: dw-ll_ucoco_384_bs5.torchscript.pt
+  prompt: "a person dancing energetically, smooth natural motion, consistent face and outfit"

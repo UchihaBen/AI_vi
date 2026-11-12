@@ -1,0 +1,14 @@
+# secrets
+.env
+config/local.yaml
+
+# runtime
+.venv/
+venv/
+__pycache__/
+*.pyc
+outputs/
+datasets/
+tools/
+comfyui/
+*.log

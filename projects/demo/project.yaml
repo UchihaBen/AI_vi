@@ -1,0 +1,57 @@
+# Video mẫu khoảng 15 giây, 3 shot, 1 nhân vật.
+# Chạy:  .venv/bin/python -m pipeline run projects/demo/project.yaml
+name: demo
+aspect: "16:9"          # 16:9 | 9:16 | 1:1
+
+# Nhạc nền (tùy chọn), đường dẫn tương đối so với file này
+# bgm: assets/bgm.mp3
+# bgm_volume: 0.2
+subtitles: burn         # burn | srt | none
+crossfade: 0.3          # giây, 0 = cắt thẳng
+
+characters:
+  linh:
+    # Mô tả ngoại hình CỐ ĐỊNH, được tự động thêm vào mọi prompt có nhân vật này
+    description: >-
+      a 25-year-old Vietnamese woman, shoulder-length straight black hair,
+      soft oval face, wearing a cream knit sweater and light blue jeans
+    trigger: linh_person
+    # Sau khi train LoRA (scripts/train_lora_sdxl.sh linh), bỏ comment 2 dòng dưới:
+    # lora: linh_v1.safetensors
+    # lora_strength: 0.85
+    voice: null           # tên giọng VieNeu, xem: python -m pipeline voices
+
+shots:
+  - id: s01
+    characters: [linh]
+    image_prompt: >-
+      medium shot, she sits by a large window in a cozy Hanoi cafe, early morning,
+      warm sunlight, steam rising from a cup of coffee on the wooden table
+    motion_prompt: she slowly lifts the coffee cup, takes a small sip and looks out the window
+    camera: static camera, shallow depth of field
+    dialogue:
+      - character: linh
+        text: "Sáng nào mình cũng ngồi đây, ở chiếc bàn cạnh cửa sổ."
+        start: 0.4
+
+  - id: s02
+    characters: [linh]
+    image_prompt: >-
+      close-up portrait, she looks out the window, soft warm backlight from the window,
+      blurred street outside
+    motion_prompt: she turns her head toward the camera and smiles gently
+    camera: slow dolly in
+    dialogue:
+      - character: linh
+        text: "Hà Nội buổi sớm luôn có một mùi hương rất riêng."
+        start: 0.5
+
+  - id: s03
+    characters: [linh]
+    image_prompt: >-
+      wide shot, she stands at the cafe door holding a cup, old Hanoi street with
+      motorbikes and trees outside, morning light
+    motion_prompt: she steps out of the cafe onto the street and walks away calmly
+    camera: slow pan right following her
+    # Muốn khống chế điểm kết thúc: thêm end_image_prompt (dùng First-Last-Frame)
+    # end_image_prompt: wide shot, she walks on the sidewalk under the trees, seen from behind
