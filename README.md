@@ -9,6 +9,8 @@ Pipeline tạo video ngắn 10–25 giây bằng AI, chạy local trên Ubuntu v
 
 Giọng nói dùng VieNeu TTS qua API (`TTS_BASE_URL`). Phần này không tốn GPU của server.
 
+📘 Ý tưởng, kiến trúc, quy trình dev → Git → server và bảng lệnh: xem **[docs/PROJECT.md](docs/PROJECT.md)**.
+
 ```
 pipeline/
   cli.py        lệnh: check, voices, tts, plan, run, dance, charsheet
